@@ -1,0 +1,10 @@
+21-02-28 16:02 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 5.4.28.Final
+21-02-28 16:02 [main] INFO  org.hibernate.annotations.common.Version - HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+21-02-28 16:02 [main] WARN  org.hibernate.orm.connections.pooling - HHH10001002: Using Hibernate built-in connection pool (not for production use!)
+21-02-28 16:02 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001005: using driver [org.postgresql.Driver] at URL [jdbc:postgresql://java-enterprise-2101192.cb6ljnanwiyj.us-east-2.rds.amazonaws.com:5432/P1_5DB]
+21-02-28 16:02 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001001: Connection properties: {password=Revature2020!, user=postgres}
+21-02-28 16:02 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001003: Autocommit mode: false
+21-02-28 16:02 [main] INFO  org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl - HHH000115: Hibernate connection pool size: 20 (min=1)
+21-02-28 16:02 [main] INFO  org.hibernate.dialect.Dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQL95Dialect
+21-02-28 16:02 [main] INFO  org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+21-02-28 16:02 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001008: Cleaning up connection pool [jdbc:postgresql://java-enterprise-2101192.cb6ljnanwiyj.us-east-2.rds.amazonaws.com:5432/P1_5DB]

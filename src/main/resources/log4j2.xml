@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="ERROR">
+    <appenders>
+        <File name="ERSLogs" fileName="src/main/resources/logs/ers.txt">
+            <PatternLayout pattern="%d{yy-mm-dd HH:mm} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </appenders>
+
+    <loggers>
+        <root level="debug">
+            <appender-ref ref="ERSLogs" level="info"/>
+        </root>
+    </loggers>
+</configuration>

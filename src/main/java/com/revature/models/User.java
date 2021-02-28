@@ -1,19 +1,40 @@
 package com.revature.models;
 
 
+import javax.persistence.*;
 import java.util.Objects;
 
 /**
  * Base constructs for users, store only the integer representation of roles in the db for easier role checking
  */
+@Entity
+@Table(name = "ers_users")
 public class User {
+    @Id
+    @GeneratedValue
+    @Column(name="id")
     private int userId;
+
+    @Column(name = "username")
     private String username;
+
+    @Column(name = "password")
     private String password;
+
+    @Column(name = "first_name")
     private String firstname;
+
+    @Column(name = "last_name")
     private String lastname;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "user_role_id")
     private Integer userRole;
+
+    @Column(name = "is_active")
+    private Boolean is_active;
     public User() {
         super();
     }
@@ -26,7 +47,7 @@ public class User {
         this.email = email;
     }
 
-    public User(int userId, String username, String password, String firstname, String lastname, String email, Integer userRole) {
+    public User(int userId, String username, String password, String firstname, String lastname, String email, Integer userRole, Boolean is_active) {
         this.userId = userId;
         this.username = username;
         this.password = password;
@@ -34,6 +55,7 @@ public class User {
         this.lastname = lastname;
         this.email = email;
         this.userRole = userRole;
+        this.is_active = is_active;
     }
 
     public int getUserId() {
@@ -121,6 +143,7 @@ public class User {
                 ", lastname='" + lastname + '\'' +
                 ", email='" + email + '\'' +
                 ", userRole=" + userRole +
+                ", is_active=" + is_active +
                 '}';
     }
 }

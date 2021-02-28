@@ -4,6 +4,8 @@ import com.revature.models.Role;
 import com.revature.models.User;
 import com.revature.repositories.UserRepository;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,12 +33,18 @@ public class UserService {
      * @param password password of the user
      * @return the object of the requested user
      */
-    public User authenticate(String username, String password){
+    public User authenticate(String username, String password, HttpServletResponse resp) throws IOException {
         if (username == null || username.trim().equals("") || password == null || password.trim().equals("")){
-            throw new RuntimeException("Invalid credentials provided");
+            return null;
         }
-        return userRepo.getAUserByUsernameAndPassword(username,password)
-                .orElseThrow(RuntimeException::new);
+
+        Optional<User> authUser =  userRepo.getAUserByUsernameAndPassword(username,password, resp);
+        if (authUser.isPresent()) {
+            return authUser.get();
+        }
+        else{
+            return null;
+        }
     }
 
     /**
@@ -44,33 +52,39 @@ public class UserService {
      * @param newUser completed user object
      */
     // TODO: encrypt all user passwords before persisting to data source
-    public void register(User newUser) {
+    public String register(User newUser) {
         if (!isUserValid(newUser)) {
-            throw new RuntimeException("Invalid user field values provided during registration!");
+            return "Invalid user field values provided during registration!";
+
         }
         Optional<User> existingUser = userRepo.getAUserByUsername(newUser.getUsername());
         if (existingUser.isPresent()) {
-            throw new RuntimeException("Username is already in use");
+            return "Username is already in use";
+
         }
         Optional<User> existingUserEmail = userRepo.getAUserByEmail(newUser.getEmail());
         if (existingUserEmail.isPresent()) {
-            throw new RuntimeException("Email is already in use");
+
+            return "Email is already in use";
         }
         newUser.setUserRole(Role.EMPLOYEE.ordinal() + 1);
         userRepo.addUser(newUser);
+        return "New User Added";
     }
 
     /**
      * Update a user in the DB.
      * @param newUser user to update
      */
-    public void update(User newUser) {
+    public String update(User newUser) {
         if (!isUserValid(newUser)) {
-            throw new RuntimeException("Invalid user field values provided during registration!");
+            return "Invalid user field values provided during registration!";
         }
         if (!userRepo.updateAUser(newUser)){
-            throw new RuntimeException("There was a problem trying to update the user");
+            return "There was a problem trying to update the user";
         }
+
+        return "Success";
     }
 
     /**

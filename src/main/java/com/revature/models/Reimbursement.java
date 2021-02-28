@@ -1,5 +1,8 @@
 package com.revature.models;
 
+import org.apache.logging.log4j.core.config.Order;
+
+import javax.persistence.*;
 import java.io.File;
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -7,62 +10,46 @@ import java.util.Objects;
 /**
  * The base unit of the ERS system. ready to include images
  */
+@Entity
+@Table(catalog="revature_storage", name = "ers_reimbursements", schema="ers")
 public class Reimbursement {
+    @Id
+    @GeneratedValue
     private Integer id;
+
+    @Column(name= "amount")
     private Double amount;
+
+    @Column(name = "submitted")
     private Timestamp submitted;
+
+    @Column(name="resolved")
     private Timestamp resolved;
+
+    @Column(name = "description")
     private String description;
+
+    // troy misspelled receipt in the database
+    @Column(name = "reciept")
     private File receipt;
-    private int authorId;
-    private int resolverId;
+
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name="author_id")
+    @OrderBy
+    private User author;
+
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name="resolver_id")
+    @OrderBy
+    private User resolver;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "reimbursement_status_id")
     private ReimbursementStatus reimbursementStatus;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "reimbursement_type_id")
     private ReimbursementType reimbursementType;
-
-    public Reimbursement() {
-        super();
-    }
-
-    public Reimbursement(Double amount, String description, int authorId,
-                         ReimbursementStatus reimbursementStatus, ReimbursementType reimbursementType) {
-        this.amount = amount;
-        this.description = description;
-        this.authorId = authorId;
-        this.reimbursementStatus = reimbursementStatus;
-        this.reimbursementType = reimbursementType;
-    }
-
-    public Reimbursement(Integer id, Double amount, String description, int authorId,
-                         ReimbursementStatus reimbursementStatus, ReimbursementType reimbursementType) {
-        this.id = id;
-        this.amount = amount;
-        this.description = description;
-        this.authorId = authorId;
-        this.reimbursementStatus = reimbursementStatus;
-        this.reimbursementType = reimbursementType;
-    }
-
-    public Reimbursement(Integer id, Double amount, Timestamp submitted,
-                         Timestamp resolved, String description, int authorId, int resolverId,
-                         ReimbursementStatus reimbursementStatus, ReimbursementType reimbursementType) {
-        this.id = id;
-        this.amount = amount;
-        this.submitted = submitted;
-        this.resolved = resolved;
-        this.description = description;
-        this.authorId = authorId;
-        this.resolverId = resolverId;
-        this.reimbursementStatus = reimbursementStatus;
-        this.reimbursementType = reimbursementType;
-    }
-
-    public File getReceipt() {
-        return receipt;
-    }
-
-    public void setReceipt(File receipt) {
-        this.receipt = receipt;
-    }
 
     public Integer getId() {
         return id;
@@ -104,20 +91,28 @@ public class Reimbursement {
         this.description = description;
     }
 
-    public int getAuthorId() {
-        return authorId;
+    public File getReceipt() {
+        return receipt;
     }
 
-    public void setAuthorId(int authorId) {
-        this.authorId = authorId;
+    public void setReceipt(File receipt) {
+        this.receipt = receipt;
     }
 
-    public int getResolverId() {
-        return resolverId;
+    public User getAuthor() {
+        return author;
     }
 
-    public void setResolverId(int resolverId) {
-        this.resolverId = resolverId;
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public User getResolver() {
+        return resolver;
+    }
+
+    public void setResolver(User resolver) {
+        this.resolver = resolver;
     }
 
     public ReimbursementStatus getReimbursementStatus() {
@@ -139,34 +134,36 @@ public class Reimbursement {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Reimbursement)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Reimbursement that = (Reimbursement) o;
-        return authorId == that.authorId &&
-                resolverId == that.resolverId &&
-                Objects.equals(id, that.id) &&
+        return Objects.equals(id, that.id) &&
                 Objects.equals(amount, that.amount) &&
                 Objects.equals(submitted, that.submitted) &&
                 Objects.equals(resolved, that.resolved) &&
                 Objects.equals(description, that.description) &&
+                Objects.equals(receipt, that.receipt) &&
+                Objects.equals(author, that.author) &&
+                Objects.equals(resolver, that.resolver) &&
                 reimbursementStatus == that.reimbursementStatus &&
                 reimbursementType == that.reimbursementType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, amount, submitted, resolved, description, authorId, resolverId, reimbursementStatus, reimbursementType);
+        return Objects.hash(id, amount, submitted, resolved, description, receipt, author, resolver, reimbursementStatus, reimbursementType);
     }
 
     @Override
     public String toString() {
         return "Reimbursement{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", amount=" + amount +
                 ", submitted=" + submitted +
                 ", resolved=" + resolved +
                 ", description='" + description + '\'' +
-                ", authorId=" + authorId +
-                ", resolverId=" + resolverId +
+                ", receipt=" + receipt +
+                ", author=" + author +
+                ", resolver=" + resolver +
                 ", reimbursementStatus=" + reimbursementStatus +
                 ", reimbursementType=" + reimbursementType +
                 '}';

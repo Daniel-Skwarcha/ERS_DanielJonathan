@@ -5,14 +5,29 @@
          version="3.1">
 
     <display-name>Expense Reimbursement System</display-name>
-    <servlet>
-        <servlet-name>ReimbursementServlet</servlet-name>
-        <servlet-class>com.revature.servlets.ReimbursementServlet</servlet-class>
-    </servlet>
 
-    <servlet-mapping>
-        <servlet-name>ReimbursementServlet</servlet-name>
-        <url-pattern>/reimbursement</url-pattern>
-    </servlet-mapping>
+<!--    <servlet>-->
+<!--        <servlet-name>UserServlet</servlet-name>-->
+<!--        <servlet-class>com.revature.servlets.UserServlet</servlet-class>-->
+<!--    </servlet>-->
+
+
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>UserServlet</servlet-name>-->
+<!--        <url-pattern>/user</url-pattern>-->
+<!--    </servlet-mapping>-->
+
+<!--    <servlet>-->
+<!--        <servlet-name>ReimbursementServlet</servlet-name>-->
+<!--        <servlet-class>com.revature.servlets.ReimbursementServlet</servlet-class>-->
+<!--    </servlet>-->
+
+
+<!--    <servlet-mapping>-->
+<!--        <servlet-name>ReimbursementServlet</servlet-name>-->
+<!--        <url-pattern>/reimbursement</url-pattern>-->
+<!--    </servlet-mapping>-->
+
+
 
 </web-app>
