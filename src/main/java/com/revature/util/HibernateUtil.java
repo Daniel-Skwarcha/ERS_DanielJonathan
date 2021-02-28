@@ -1,5 +1,6 @@
 package com.revature.util;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 
@@ -19,13 +20,17 @@ public class HibernateUtil {
     public static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
+                Properties props = new Properties();
+                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                InputStream propsInput = loader.getResourceAsStream("application.properties");
+                props.load(propsInput);
 
                 Properties settings = new Properties();
                 Configuration configuration = new Configuration();
                 settings.put(Environment.DRIVER, "org.postgresql.Driver");
-                settings.put(Environment.URL, "");
-                settings.put(Environment.USER, "");
-                settings.put(Environment.PASS, "");
+                settings.put(Environment.URL, props.getProperty("url"));
+                settings.put(Environment.USER, props.getProperty("username"));
+                settings.put(Environment.PASS, props.getProperty("password"));
                 settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQL95Dialect");
                 settings.put(Environment.SHOW_SQL, "true");
 

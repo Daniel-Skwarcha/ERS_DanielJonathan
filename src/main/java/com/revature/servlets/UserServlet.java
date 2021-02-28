@@ -45,7 +45,15 @@ public class UserServlet extends HttpServlet {
 
         //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
+        if(principle == null)
+        {
+            respWriter.write("The principle is null the list size is " + UserSession.getUserSession().getHttpSessionArrayList().size());
+        }
+        else if (principle != null) {
+            respWriter.write("The principle is not null the list size is " + UserSession.getUserSession().getHttpSessionArrayList().size());
+        }
+
 
         try {
 

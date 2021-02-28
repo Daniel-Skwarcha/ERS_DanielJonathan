@@ -29,11 +29,11 @@ public class UserSession {
     private String mapEnumRole(Integer enumRole) {
         --enumRole; // we subtract one because we added one to the enum ordinal value before updating/inserting
         switch(enumRole) {
-            case 1:
+            case 0:
                 return "ADMIN";
-            case 2:
+            case 1:
                 return "FINANCE MANAGER";
-            case 3:
+            case 2:
                 return "EMPLOYEE";
             default:
                 return "DELETED";
