@@ -26,13 +26,27 @@ public class UserSession {
         return httpSessionArrayList;
     }
 
+    private String mapEnumRole(Integer enumRole) {
+        --enumRole; // we subtract one because we added one to the enum ordinal value before updating/inserting
+        switch(enumRole) {
+            case 1:
+                return "ADMIN";
+            case 2:
+                return "FINANCE MANAGER";
+            case 3:
+                return "EMPLOYEE";
+            default:
+                return "DELETED";
+        }
+    }
+
     public void createSession(HttpServletRequest req , User user) {
         HttpSession httpSession = req.getSession();
 
         httpSession.setAttribute("ipAddress", req.getRemoteAddr());
         httpSession.setAttribute("userId", user.getUserId());
         httpSession.setAttribute("username", user.getUsername());
-        httpSession.setAttribute("userRole", user.getUserRole());
+        httpSession.setAttribute("userRole", mapEnumRole(user.getUserRole()));
         httpSessionArrayList.add(httpSession);
     }
 
