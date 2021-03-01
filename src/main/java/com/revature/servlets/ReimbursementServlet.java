@@ -36,7 +36,7 @@ public class ReimbursementServlet extends HttpServlet {
         String header = req.getHeader("endPointValue");
         //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         if (principle == null) {
             resp.getWriter().write("Unauthorized: header is " + header);
@@ -244,7 +244,7 @@ public class ReimbursementServlet extends HttpServlet {
 
         //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         if (principle == null) {
             resp.getWriter().write("Unauthorized");
@@ -284,6 +284,10 @@ public class ReimbursementServlet extends HttpServlet {
         resp.setContentType("application/json");
 
         try {
+//            Reimbursement reimbursement = new Reimbursement();
+//            reimbursement.setAmount(Double.parseDouble(req.getParameter("amount")));
+//            reimbursement.setDescription(req.getParameter("description"));
+//            reimbursement.setReceipt(req.);
 
             Reimbursement reimbursement = mapper.readValue(req.getInputStream(), Reimbursement.class);
             String result = reimbursementService.save(reimbursement);
@@ -313,7 +317,7 @@ public class ReimbursementServlet extends HttpServlet {
 
         //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         if (principle == null) {
             resp.getWriter().write("Unauthorized");

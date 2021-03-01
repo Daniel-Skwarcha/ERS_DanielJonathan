@@ -25,15 +25,64 @@ import java.util.Optional;
 
 @WebServlet("/user")
 public class UserServlet extends HttpServlet {
-    private BufferedReader reader;
     private UserService userService = new UserService();
-
     protected static final Logger logger = LogManager.getLogger(UserServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().write("I am in get! and the header is " + req.getHeader("endPointValue"));
-        resp.setStatus(200);
+        PrintWriter respWriter = resp.getWriter();
+        String header = req.getHeader("endPointValue");
+        UserSession.getUserSession().checkForUser(req);
+        Principal principle = (Principal) req.getAttribute("principal");
+        try {
+
+            switch (header) {
+                case "getUsers":
+                    if (principle == null) {
+                        respWriter.write("Unauthorized");
+                        resp.setStatus(401);
+                        break;
+                    }
+                    if (!principle.getRole().equals("Admin") ) {
+                        respWriter.write("Forbidden");
+                        resp.setStatus(403);
+                        break;
+                    }
+                    getUsers(req, resp);
+                    break;
+                default:
+                    resp.getWriter().write("Invalid endpoint");
+                    resp.setStatus(400);
+            }
+        } catch (Exception e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
+            resp.setStatus(500);
+        }
+    }
+
+    private void getUsers(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        PrintWriter respWriter = resp.getWriter();
+        resp.setContentType("application/json");
+        try {
+
+            List<User> users = userService.getAllUsers();
+
+            if (users == null) {
+                respWriter.write(mapper.writeValueAsString("Something went wrong. What that is, the server doesn't know."));
+                resp.setStatus(500);
+            }
+            else {
+                respWriter.write(String.valueOf(users));
+                resp.setStatus(200);
+            }
+
+        }catch(Exception e) {
+            respWriter.write(mapper.writeValueAsString("Error in processing your request."));
+            logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
+            resp.setStatus(500);
+        }
+
     }
 
     @Override
@@ -43,17 +92,8 @@ public class UserServlet extends HttpServlet {
         resp.setContentType("application/json");
         String header = req.getHeader("endPointValue");
 
-        //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
         Principal principle = (Principal) req.getAttribute("principal");
-        if(principle == null)
-        {
-            respWriter.write("The principle is null the list size is " + UserSession.getUserSession().getHttpSessionArrayList().size());
-        }
-        else if (principle != null) {
-            respWriter.write("The principle is not null the list size is " + UserSession.getUserSession().getHttpSessionArrayList().size());
-        }
-
 
         try {
 
@@ -87,7 +127,7 @@ public class UserServlet extends HttpServlet {
             }
         } catch (Exception e) {
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
-            respWriter.write(mapper.writeValueAsString("The header is " + header + " and the exception was " + Arrays.toString(e.getStackTrace())));
+            respWriter.write(mapper.writeValueAsString("The server was unable to process your request."));
             resp.setStatus(500);
         }
     }
@@ -96,34 +136,20 @@ public class UserServlet extends HttpServlet {
         ObjectMapper mapper = new ObjectMapper();
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
-
         try {
-
             Credentials creds = mapper.readValue(req.getInputStream(), Credentials.class);
 
-            User authUser = userService.authenticate(creds.getUsername(), creds.getPassword(), resp);
+            User authUser = userService.authenticate(creds.getUsername(), creds.getPassword());
             if (authUser == null) {
-                respWriter.write("Bad credentials: " + creds.toString());
+                respWriter.write("Your username or password was incorrect.");
                 resp.setStatus(401);
                 return;
             }
-
-            respWriter.write(mapper.writeValueAsString("Successfully logged in"));
             UserSession.getUserSession().createSession(req, authUser);
-            resp.setStatus(200);
-//            httpSession = req.getSession();
-//
-//            httpSession.setAttribute("ipAddress", req.getRemoteAddr());
-//            httpSession.setAttribute("userid", authUser.getUserId());
-//            UserSession.getUserSession().getHttpSessionArrayList().add(httpSession);
-            //String token = UserJWT.createJwt(authUser);
-            //Cookie tokenCookie = new Cookie("my-token", token);
-            //tokenCookie.setHttpOnly(true);
-           // resp.addCookie(tokenCookie);
-
+            resp.setStatus(204);
         } catch (Exception e) {
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
-            respWriter.write(mapper.writeValueAsString(e.getStackTrace()));
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             resp.setStatus(500);
         }
 
@@ -133,9 +159,7 @@ public class UserServlet extends HttpServlet {
         ObjectMapper mapper = new ObjectMapper();
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
-
         try {
-
             User user = mapper.readValue(req.getInputStream(), User.class);
             String result = userService.register(user);
             respWriter.write(mapper.writeValueAsString(result));
@@ -147,26 +171,20 @@ public class UserServlet extends HttpServlet {
                 resp.setStatus(400);
             }
         }catch(Exception e) {
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
             resp.setStatus(500);
         }
     }
 
-
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         ObjectMapper mapper = new ObjectMapper();
         PrintWriter respWriter = resp.getWriter();
-
+        resp.setContentType("application/json");
         String header = req.getHeader("endPointValue");
-
-        //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
-
-
-
+        Principal principle = (Principal) req.getAttribute("principal");
         try {
 
             switch (header) {
@@ -189,23 +207,16 @@ public class UserServlet extends HttpServlet {
             }
         } catch (Exception e) {
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             resp.setStatus(500);
         }
-
-
-
-        reader = req.getReader();
     }
 
     private void editUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
         ObjectMapper mapper = new ObjectMapper();
-
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
-
         try {
-
             User user = mapper.readValue(req.getInputStream(), User.class);
             String result = userService.update(user);
             respWriter.write(mapper.writeValueAsString(result));
@@ -217,6 +228,7 @@ public class UserServlet extends HttpServlet {
                 resp.setStatus(400);
             }
         }catch(Exception e) {
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
             resp.setStatus(500);
         }
@@ -225,16 +237,19 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        PrintWriter respWriter = resp.getWriter();
+        resp.setContentType("application/json");
         String header = req.getHeader("endPointValue");
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         try {
 
             switch (header) {
                 case "logout":
                     if (principle == null) {
-                        resp.getWriter().write("Forbidden");
+                        resp.getWriter().write("Forbidden. Not Logged In.");
                         resp.setStatus(403);
                         logger.error("Attempt to log out user not logged in " + LocalDateTime.now().toString());
                         break;
@@ -262,6 +277,7 @@ public class UserServlet extends HttpServlet {
                     resp.setStatus(400);
             }
         } catch (Exception e) {
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
             resp.setStatus(500);
         }
@@ -272,14 +288,13 @@ public class UserServlet extends HttpServlet {
         ObjectMapper mapper = new ObjectMapper();
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
-
         try {
-
             respWriter.write(mapper.writeValueAsString("Logged out"));
             UserSession.getUserSession().logoutUser(req);
             resp.setStatus(200);
 
         } catch (Exception e) {
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
             resp.setStatus(500);
         }
@@ -290,9 +305,6 @@ public class UserServlet extends HttpServlet {
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
         try {
-
-            //boolean userDeleted = userService.deleteUserById(principal.getId());
-                // USE
                int id = Integer.parseInt(req.getParameter("id"));
 
                if (id == principal.getId()) {
@@ -300,16 +312,11 @@ public class UserServlet extends HttpServlet {
                    resp.setStatus(403);
                    return;
                }
-
             boolean userDeleted = userService.deleteUserById(id);
-
             if(userDeleted)
             {
                 UserSession.getUserSession().deleteUser(id);
-
-                respWriter.write(mapper.writeValueAsString("User successfully deleted"));
-
-                resp.setStatus(200);
+                resp.setStatus(204);
             }
             else
             {
@@ -318,6 +325,7 @@ public class UserServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+            respWriter.write(mapper.writeValueAsString("The server was unable to process the request."));
             logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
             resp.setStatus(500);
         }

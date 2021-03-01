@@ -9,6 +9,7 @@ import io.jsonwebtoken.Jwts;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class UserSession {
@@ -30,13 +31,13 @@ public class UserSession {
         --enumRole; // we subtract one because we added one to the enum ordinal value before updating/inserting
         switch(enumRole) {
             case 0:
-                return "ADMIN";
+                return "Admin";
             case 1:
-                return "FINANCE MANAGER";
+                return "Finance Manager";
             case 2:
-                return "EMPLOYEE";
+                return "Employee";
             default:
-                return "DELETED";
+                return "Deleted";
         }
     }
 
@@ -47,6 +48,7 @@ public class UserSession {
         httpSession.setAttribute("userId", user.getUserId());
         httpSession.setAttribute("username", user.getUsername());
         httpSession.setAttribute("userRole", mapEnumRole(user.getUserRole()));
+        httpSession.setMaxInactiveInterval(-1);
         httpSessionArrayList.add(httpSession);
     }
 
@@ -56,13 +58,14 @@ public class UserSession {
         // Get the HTTP cookie named Authorization
         HttpSession httpSession = null;
         Principal principal = null;
-        Cookie[] cookies = req.getCookies();
+//        Cookie[] cookies = req.getCookies();
         for (HttpSession httpSession1: httpSessionArrayList) {
-            if(httpSession1.getAttribute("ipAddress").equals(req.getRemoteAddr())) {
-                httpSession = httpSession1;
-                break;
-            }
-        }
+                if(httpSession1.getAttribute("ipAddress").equals(req.getRemoteAddr())) {
+                    httpSession = httpSession1;
+                    break;
+                }
+
+       }
 
         if (httpSession != null)
         {
@@ -102,6 +105,7 @@ public class UserSession {
     }
 
     public void logoutUser(HttpServletRequest req) {
+
         for (HttpSession httpSession1: httpSessionArrayList) {
             if(((String)httpSession1.getAttribute("ipAddress")).equals(req.getRemoteAddr())) {
                 httpSessionArrayList.remove(httpSession1);
@@ -114,11 +118,13 @@ public class UserSession {
 
     public void deleteUser(int id) {
         for (HttpSession httpSession1: httpSessionArrayList) {
-            if(((Integer)httpSession1.getAttribute("userId")) == id) {
-                httpSession1.invalidate();
-                httpSessionArrayList.remove(httpSession1);
-                break;
+                if(((Integer)httpSession1.getAttribute("userId")) == id) {
+                    httpSession1.invalidate();
+                    httpSessionArrayList.remove(httpSession1);
+                    break;
+
+                }
             }
         }
     }
-}
+

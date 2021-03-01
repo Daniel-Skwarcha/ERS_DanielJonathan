@@ -11,10 +11,11 @@ import java.util.Objects;
  * The base unit of the ERS system. ready to include images
  */
 @Entity
-@Table(catalog="revature_storage", name = "ers_reimbursements", schema="ers")
+@Table(name = "ers_reimbursements")
 public class Reimbursement {
     @Id
     @GeneratedValue
+    @Column(name="id")
     private Integer id;
 
     @Column(name= "amount")

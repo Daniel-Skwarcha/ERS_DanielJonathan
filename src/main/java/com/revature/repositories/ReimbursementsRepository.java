@@ -6,13 +6,12 @@ import com.revature.models.Reimbursement;
 import com.revature.models.ReimbursementStatus;
 import com.revature.models.ReimbursementType;
 import com.revature.models.User;
-import com.revature.util.ConnectionFactory;
-import com.revature.util.CriteriaBuilderFactory;
-import com.revature.util.HibernateSessionFactory;
+import com.revature.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import javax.persistence.criteria.*;
@@ -46,6 +45,7 @@ public class ReimbursementsRepository {
     private String baseSelectNoDetail = "SELECT er.id, er.author_id, er.reimbursement_type_id, er.reimbursement_status_id FROM ers_reimbursements er ";
     private String baseInsert = "INSERT INTO project_1.ers_reimbursements ";
     private String baseUpdate = "UPDATE project_1.ers_reimbursements er ";
+    protected static final Logger logger = LogManager.getLogger(ReimbursementsRepository.class);
 
     public ReimbursementsRepository() {
         super();
@@ -60,20 +60,43 @@ public class ReimbursementsRepository {
      */
     // TODO add support to persist receipt images to data source
     public boolean addReimbursement(Reimbursement reimbursement) {
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
 
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = null;
         try {
+            tx = session.beginTransaction();
             session.save(reimbursement);
-            session.getTransaction().commit();
-            session.close();
+            tx.commit();
+            return true;
         } catch (Exception e) {
-            session.getTransaction().rollback();
-            session.close();
-            return false;
-        }
+            if (tx != null) {
+                tx.rollback();
+            }
+            logger.error(e.getStackTrace());
 
-        return true;
+        } finally {
+            session.close();
+        }
+        return false;
+
+//
+//
+//
+//
+//        Session session = sessionFactory.openSession();
+//        session.beginTransaction();
+//
+//        try {
+//            session.save(reimbursement);
+//            session.getTransaction().commit();
+//            session.close();
+//        } catch (Exception e) {
+//            session.getTransaction().rollback();
+//            session.close();
+//            return false;
+//        }
+//
+//        return true;
     }
 
     //---------------------------------- READ -------------------------------------------- //

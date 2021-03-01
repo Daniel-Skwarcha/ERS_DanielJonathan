@@ -11,7 +11,7 @@ import java.util.Objects;
 @Table(name = "ers_users")
 public class User {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private int userId;
 
@@ -34,7 +34,7 @@ public class User {
     private Integer userRole;
 
     @Column(name = "is_active")
-    private Boolean is_active;
+    private Boolean isActive;
     public User() {
         super();
     }
@@ -47,7 +47,7 @@ public class User {
         this.email = email;
     }
 
-    public User(int userId, String username, String password, String firstname, String lastname, String email, Integer userRole, Boolean is_active) {
+    public User(int userId, String username, String password, String firstname, String lastname, String email, Integer userRole, Boolean isActive) {
         this.userId = userId;
         this.username = username;
         this.password = password;
@@ -55,7 +55,7 @@ public class User {
         this.lastname = lastname;
         this.email = email;
         this.userRole = userRole;
-        this.is_active = is_active;
+        this.isActive = isActive;
     }
 
     public int getUserId() {
@@ -114,6 +114,14 @@ public class User {
         this.userRole = userRole;
     }
 
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean active) {
+        this.isActive = isActive;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -125,7 +133,8 @@ public class User {
                 Objects.equals(getFirstname(), user.getFirstname()) &&
                 Objects.equals(getLastname(), user.getLastname()) &&
                 Objects.equals(getEmail(), user.getEmail()) &&
-                Objects.equals(getUserRole(), user.getUserRole());
+                Objects.equals(getUserRole(), user.getUserRole()) &&
+                Objects.equals(getIsActive(), user.getIsActive());
     }
 
     @Override
@@ -142,8 +151,8 @@ public class User {
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", email='" + email + '\'' +
-                ", userRole=" + userRole +
-                ", is_active=" + is_active +
+                ", userRole=" + userRole + '\'' +
+                ", isActive=" + isActive +
                 '}';
     }
 }

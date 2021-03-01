@@ -21,9 +21,6 @@ public class UserService {
      */
     public List<User> getAllUsers(){
         List<User> users = userRepo.getAllusers();
-        if (users.isEmpty()){
-            throw new RuntimeException();
-        }
         return users;
     }
 
@@ -33,12 +30,12 @@ public class UserService {
      * @param password password of the user
      * @return the object of the requested user
      */
-    public User authenticate(String username, String password, HttpServletResponse resp) throws IOException {
+    public User authenticate(String username, String password) throws IOException {
         if (username == null || username.trim().equals("") || password == null || password.trim().equals("")){
             return null;
         }
 
-        Optional<User> authUser =  userRepo.getAUserByUsernameAndPassword(username,password, resp);
+        Optional<User> authUser =  userRepo.getAUserByUsernameAndPassword(username,password);
         if (authUser.isPresent()) {
             return authUser.get();
         }
@@ -52,7 +49,7 @@ public class UserService {
      * @param newUser completed user object
      */
     // TODO: encrypt all user passwords before persisting to data source
-    public String register(User newUser) {
+    public String register(User newUser) throws IOException {
         if (!isUserValid(newUser)) {
             return "Invalid user field values provided during registration!";
 
@@ -67,16 +64,20 @@ public class UserService {
 
             return "Email is already in use";
         }
-        newUser.setUserRole(Role.EMPLOYEE.ordinal() + 1);
-        userRepo.addUser(newUser);
-        return "New User Added";
+
+        if(userRepo.addUser(newUser)) {
+            return "New User Added";
+        }
+        return "No User Added";
+
+
     }
 
     /**
      * Update a user in the DB.
      * @param newUser user to update
      */
-    public String update(User newUser) {
+    public String update(User newUser) throws IOException {
         if (!isUserValid(newUser)) {
             return "Invalid user field values provided during registration!";
         }
