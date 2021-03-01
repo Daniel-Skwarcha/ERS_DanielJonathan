@@ -168,7 +168,7 @@ public class ReimbursementsRepository {
 
         try {
             transaction = session.beginTransaction();
-            Query<Reimbursement> query = session.createQuery("FROM Reimbursement WHERE authorId = :id")
+            Query<Reimbursement> query = session.createQuery("FROM Reimbursement WHERE author_id = :id")
                     .setParameter("id", authorId);
             reimbursements = query.getResultList();
             transaction.commit();
