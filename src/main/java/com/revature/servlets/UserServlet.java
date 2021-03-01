@@ -227,7 +227,7 @@ public class UserServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String header = req.getHeader("endPointValue");
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         try {
 

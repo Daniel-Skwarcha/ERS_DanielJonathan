@@ -11,7 +11,7 @@ import java.util.Objects;
  * The base unit of the ERS system. ready to include images
  */
 @Entity
-@Table(catalog="revature_storage", name = "ers_reimbursements", schema="ers")
+@Table(name = "ers_reimbursements", schema="ers")
 public class Reimbursement {
     @Id
     @GeneratedValue
@@ -33,15 +33,11 @@ public class Reimbursement {
     @Column(name = "reciept")
     private File receipt;
 
-    @ManyToOne(targetEntity = User.class)
-    @JoinColumn(name="author_id")
-    @OrderBy
-    private User author;
+    @Column(name="author_id")
+    private int authorId;
 
-    @ManyToOne(targetEntity = User.class)
-    @JoinColumn(name="resolver_id")
-    @OrderBy
-    private User resolver;
+    @Column(name="resolver_id")
+    private int resolverId;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "reimbursement_status_id")
@@ -99,20 +95,20 @@ public class Reimbursement {
         this.receipt = receipt;
     }
 
-    public User getAuthor() {
-        return author;
+    public int getAuthorId() {
+        return authorId;
     }
 
-    public void setAuthor(User author) {
-        this.author = author;
+    public void setAuthorId(int authorId) {
+        this.authorId = authorId;
     }
 
-    public User getResolver() {
-        return resolver;
+    public int getResolverId() {
+        return resolverId;
     }
 
-    public void setResolver(User resolver) {
-        this.resolver = resolver;
+    public void setResolverId(int resolverId) {
+        this.resolverId = resolverId;
     }
 
     public ReimbursementStatus getReimbursementStatus() {
@@ -136,21 +132,21 @@ public class Reimbursement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reimbursement that = (Reimbursement) o;
-        return Objects.equals(id, that.id) &&
+        return authorId == that.authorId &&
+                resolverId == that.resolverId &&
+                Objects.equals(id, that.id) &&
                 Objects.equals(amount, that.amount) &&
                 Objects.equals(submitted, that.submitted) &&
                 Objects.equals(resolved, that.resolved) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(receipt, that.receipt) &&
-                Objects.equals(author, that.author) &&
-                Objects.equals(resolver, that.resolver) &&
                 reimbursementStatus == that.reimbursementStatus &&
                 reimbursementType == that.reimbursementType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, amount, submitted, resolved, description, receipt, author, resolver, reimbursementStatus, reimbursementType);
+        return Objects.hash(id, amount, submitted, resolved, description, receipt, authorId, resolverId, reimbursementStatus, reimbursementType);
     }
 
     @Override
@@ -162,8 +158,8 @@ public class Reimbursement {
                 ", resolved=" + resolved +
                 ", description='" + description + '\'' +
                 ", receipt=" + receipt +
-                ", author=" + author +
-                ", resolver=" + resolver +
+                ", authorId=" + authorId +
+                ", resolverId=" + resolverId +
                 ", reimbursementStatus=" + reimbursementStatus +
                 ", reimbursementType=" + reimbursementType +
                 '}';

@@ -1,5 +1,6 @@
 package com.revature.repositories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.revature.dtos.RbDTO;
 import com.revature.dtos.RbNoDetailDTO;
 import com.revature.models.Reimbursement;
@@ -9,10 +10,13 @@ import com.revature.models.User;
 import com.revature.util.ConnectionFactory;
 import com.revature.util.CriteriaBuilderFactory;
 import com.revature.util.HibernateSessionFactory;
+import com.revature.util.HibernateUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import javax.persistence.criteria.*;
@@ -155,40 +159,29 @@ public class ReimbursementsRepository {
      * @return a set of reimbursements mapped by the MapResultSet method
      * @throws SQLException e
      */
-    public List<RbDTO> getAllReimbSetByAuthorId(Integer authorId) throws SQLException {
+    public List<RbDTO> getAllReimbSetByAuthorId(Integer authorId, HttpServletResponse resp) throws Exception, IOException {
+        List<Reimbursement> reimbursements = null;
+        List<RbDTO> reimbs = null;
+
         Session session = sessionFactory.openSession();
-        CriteriaQuery<Reimbursement> reimbursementCQ = criteriaBuilder.createQuery(Reimbursement.class);
-        session.beginTransaction();
+        Transaction transaction = null;
 
-        Root<Reimbursement> rootReimbursement = reimbursementCQ.from(Reimbursement.class);
-        Join<Reimbursement, Reimbursement> authorJoin = rootReimbursement.join("author_id", JoinType.LEFT);
-        Join<Reimbursement, Reimbursement> resolverJoin = authorJoin.join("resolver_id", JoinType.LEFT);
-
-        reimbursementCQ.select(rootReimbursement)
-                .where(criteriaBuilder.equal(rootReimbursement.get("author_id"), authorId));
-
-        Query<Reimbursement> query = session.createQuery(reimbursementCQ);
-        List<Reimbursement> list = query.list();
-        List<RbDTO> reimbursements = mapResultSetDTO(list);
-        session.getTransaction().commit();
-        session.close();
-
-        return reimbursements;
-
-        /*List<RbDTO> reimbursements = new ArrayList<>();
-        try(Connection conn = ConnectionFactory.getInstance().getConnection()) {
-            String sql = baseQuery + "WHERE er.author_id=? order by er.id";
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setInt(1,authorId);
-
-            ResultSet rs = ps.executeQuery();
-
-            reimbursements = mapResultSetDTO(rs);
-        } catch (SQLException e) {
-            //logger.error(e.getStackTrace());
+        try {
+            transaction = session.beginTransaction();
+            Query<Reimbursement> query = session.createQuery("FROM Reimbursement WHERE authorId = :id")
+                    .setParameter("id", authorId);
+            reimbursements = query.getResultList();
+            transaction.commit();
+            reimbs = mapResultSetDTO(reimbursements);
+        } catch(Exception e) {
+            ObjectMapper mapper = new ObjectMapper();
+            resp.getWriter().write(mapper.writeValueAsString("error in author id fetch " + e.getMessage()));
+            if(transaction != null){
+                transaction.rollback();
+            }
         }
-        return reimbursements;*/
+        session.close();
+        return reimbs;
     }
 
     /**
@@ -600,14 +593,14 @@ public class ReimbursementsRepository {
             temp.setAmount(reimbursement.getAmount());
             temp.setSubmitted(reimbursement.getSubmitted().toString().substring(0,19));
             temp.setDescription(reimbursement.getDescription());
-            temp.setAuthorName(reimbursement.getAuthor().getFirstname() + " " + reimbursement.getAuthor().getLastname());
+            //temp.setAuthorName(reimbursement.getAuthor().getFirstname() + " " + reimbursement.getAuthor().getLastname());
             temp.setStatus(ReimbursementStatus.getByNumber(reimbursement.getReimbursementStatus().ordinal() + 1).toString());
             temp.setType(ReimbursementType.getByNumber(reimbursement.getReimbursementType().ordinal() + 1).toString());
 
             try {
                 temp.setResolved(reimbursement.getResolved().toString().substring(0,19));
-                temp.setResolverName(reimbursement.getResolver().getFirstname() + " " +
-                        reimbursement.getResolver().getLastname());
+                //temp.setResolverName(reimbursement.getResolver().getFirstname() + " " +
+                //        reimbursement.getResolver().getLastname());
             } catch (NullPointerException e){
                 //If Reimb. has not been resolved DB will return null for these values:
                 temp.setResolved("");
@@ -625,7 +618,7 @@ public class ReimbursementsRepository {
         reimbursements.stream().forEach(reimbursement -> {
             RbNoDetailDTO temp = new RbNoDetailDTO();
             temp.setId(reimbursement.getId());
-            temp.setAuthorId(reimbursement.getAuthor().getUserId());
+            temp.setAuthorId(reimbursement.getAuthorId());
             temp.setStatus(ReimbursementStatus.getByNumber(reimbursement.getReimbursementStatus().ordinal() + 1).toString());
             temp.setType(ReimbursementType.getByNumber(reimbursement.getReimbursementType().ordinal() + 1).toString());
 

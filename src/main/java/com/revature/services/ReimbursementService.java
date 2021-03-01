@@ -5,6 +5,8 @@ import com.revature.dtos.RbNoDetailDTO;
 import com.revature.models.Reimbursement;
 import com.revature.repositories.ReimbursementsRepository;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -35,12 +37,12 @@ public class ReimbursementService {
      * @param userId user id requested
      * @return A list of RbDTO objects
      */
-    public List<RbDTO> getReimbByUserId(Integer userId) throws SQLException {
+    public List<RbDTO> getReimbByUserId(Integer userId, HttpServletResponse resp) throws Exception {
         if (userId <= 0){
             return null;
             //throw new RuntimeException("THE PROVIDED USER ID CANNOT BE LESS THAN OR EQUAL TO ZERO");
         }
-        return reimbRepo.getAllReimbSetByAuthorId(userId);
+        return reimbRepo.getAllReimbSetByAuthorId(userId, resp);
 
     }
 
@@ -153,7 +155,7 @@ public class ReimbursementService {
         if (reimb == null) return false;
         if (reimb.getAmount() == null || reimb.getAmount() <= 0 ) return false;
         if (reimb.getDescription() == null || reimb.getDescription().trim().equals("")) return false;
-        if (reimb.getAuthor().getUserId() <= 0 ) return false;
+        if (reimb.getAuthorId() <= 0 ) return false;
         if (reimb.getReimbursementType() == null ) return false;
         return true;
     }

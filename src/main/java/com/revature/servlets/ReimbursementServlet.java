@@ -36,7 +36,7 @@ public class ReimbursementServlet extends HttpServlet {
         String header = req.getHeader("endPointValue");
         //UserJWT.checkToken(req);
         UserSession.getUserSession().checkForUser(req);
-        Principal principle = (Principal) req.getAttribute("principle");
+        Principal principle = (Principal) req.getAttribute("principal");
 
         if (principle == null) {
             resp.getWriter().write("Unauthorized: header is " + header);
@@ -50,7 +50,7 @@ public class ReimbursementServlet extends HttpServlet {
 
             switch (header) {
                 case "getReimbursementDetails":
-                    if(principle.getRole().equals("Admin")) {
+                    if(!principle.getRole().equals("ADMIN")) {
                         resp.getWriter().write("Forbidden");
                         // 403 is forbidden, which means the server knows who they are, but the user does not have permission to complete this action
                         resp.setStatus(403);
@@ -105,7 +105,8 @@ public class ReimbursementServlet extends HttpServlet {
                     resp.setStatus(400);
             }
         } catch (Exception e) {
-            resp.getWriter().write(e.getMessage());
+            ObjectMapper mapper = new ObjectMapper();
+            resp.getWriter().write(mapper.writeValueAsString(e.getStackTrace()));
         }
     }
 
@@ -113,16 +114,18 @@ public class ReimbursementServlet extends HttpServlet {
         ObjectMapper mapper = new ObjectMapper();
         PrintWriter respWriter = resp.getWriter();
         resp.setContentType("application/json");
+        //String sessionId = (String) req.getSession().getAttribute("id");
+        //resp.getWriter().write("sessionid = " + sessionId);
 
         try {
-            int id = Integer.parseInt(req.getParameter("id"));
-            if (principal.getRole().equals("Employee") && principal.getId() != id) {
+            //int id = Integer.parseInt(req.getParameter("id"));
+            if (principal.getRole().equals("Employee")) {
                 respWriter.write(mapper.writeValueAsString("Unauthorized."));
                 resp.setStatus(403);
                 return;
             }
 
-            List<RbDTO>  rbDTOList= reimbursementService.getReimbByUserId(id);
+            List<RbDTO>  rbDTOList= reimbursementService.getReimbByUserId(principal.getId(), resp);
             if (rbDTOList != null && !rbDTOList.isEmpty()) {
                 respWriter.write(mapper.writeValueAsString(rbDTOList));
                 resp.setStatus(200);
@@ -133,7 +136,8 @@ public class ReimbursementServlet extends HttpServlet {
             logger.error("BAD REQUEST for getReimbursementDetails " + LocalDateTime.now().toString());
 
         } catch (Exception e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + " " + LocalDateTime.now().toString());
+            resp.getWriter().write(mapper.writeValueAsString(e.getMessage() + Arrays.toString(e.getStackTrace())));
+            logger.error(Arrays.toString(e.getStackTrace()));
             resp.setStatus(500);
         }
     }
@@ -434,7 +438,7 @@ public class ReimbursementServlet extends HttpServlet {
         try {
 
             Reimbursement reimbursement = mapper.readValue(req.getInputStream(), Reimbursement.class);
-            if (reimbursement.getAuthor().getUserId() != principal.getId()) {
+            if (reimbursement.getAuthorId() != principal.getId()) {
                 respWriter.write(mapper.writeValueAsString("Unauthorized. User cannot edit a reimbursement that they did not create!"));
                 resp.setStatus(403);
                 return;
